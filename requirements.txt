@@ -1,0 +1,5 @@
+flair
+textacy
+gensim
+hug
+waitress

@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  nlp:
+    build: .
+    volumes:
+      - ./app:/app
+      - ./embeddings:/root/.flair/embeddings
+    ports:
+      - 8000:8000
+    entrypoint: /bin/bash -c "waitress-serve --listen 0.0.0.0:8000 app:__hug_wsgi__"
+    stdin_open: true
+    tty: true
