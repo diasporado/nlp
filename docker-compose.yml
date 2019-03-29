@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 
 services:
   nlp:
@@ -7,7 +7,10 @@ services:
       - ./app:/app
       - ./embeddings:/root/.flair/embeddings
     ports:
-      - 8000:8000
-    entrypoint: /bin/bash -c "waitress-serve --listen 0.0.0.0:8000 app:__hug_wsgi__"
+      - 8001:8001
+    environment:
+      USE_EMBEDDINGS: 'False'
+      USE_NER: 'True'
+    entrypoint: /bin/bash -c "waitress-serve --listen 0.0.0.0:8001 app:__hug_wsgi__"
     stdin_open: true
     tty: true

@@ -2,14 +2,15 @@ FROM python:3.7-slim
 # FROM ubuntu:latest
 
 COPY /app .
-WORKDIR /app
 COPY requirements.txt .
+COPY /spacy/en_core_web_sm-2.1.0.tar.gz .
+COPY SSL-Trust-2018.crt .
 
 RUN apt-get update && \
  apt-get install -y gcc g++ vim && \
  apt-get clean && \
- pip3 install --no-cache-dir --upgrade setuptools && \
- pip3 install --no-cache-dir -r requirements.txt && \
- python3 -m spacy download en_core_web_sm && \
- pip3 list && \
- rm *
+ pip3 install --no-cache-dir --trusted-host pypi.python.org --cert SSL-Trust-2018.crt --upgrade setuptools && \
+ pip3 install --no-cache-dir --trusted-host pypi.python.org --cert SSL-Trust-2018.crt -r requirements.txt && \
+ pip3 install --no-cache-dir --trusted-host pypi.python.org --cert SSL-Trust-2018.crt en_core_web_sm-2.1.0.tar.gz
+ 
+WORKDIR /app
