@@ -6,6 +6,7 @@ services:
     volumes:
       - ./app:/app
       - ./embeddings:/root/.flair/embeddings
+      - ./models:/root/.flair/models
     ports:
       - 8001:8001
     environment:

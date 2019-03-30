@@ -53,6 +53,7 @@ def get_word_embeddings(body, hug_timer=3):
     if not correct_input_format(msg, "documents"):
         return { 'time_taken': float(hug_timer), 'success': False, "error": "Wrong input format received"}
     
+    results = []
     try:
         documents = msg['documents']
         embedding_type = msg.get('type', DEFAULT_EMBEDDING_TYPE)
@@ -91,20 +92,19 @@ def get_word_embeddings(body, hug_timer=3):
                 document_embeddings = DocumentPoolEmbeddings(embeddings=combined_embeddings, mode='mean')
             elif embedding_document_type == 'RNN':
                 document_embeddings = DocumentRNNEmbeddings(combined_embeddings, **embedding_rnn_params)
-        results = []
-        for doc in documents:
-            if type(doc) == list:
+        
+        for text in documents:
+            if type(text) == list:
                 sentence = Sentence(use_tokenizer=False)
-                for tok in doc:
+                for tok in text:
                     sentence.add_token(Token(tok))
             else:
-                sentence = Sentence(doc)
+                sentence = Sentence(text)
             document_embeddings.embed(sentence)
             results.append(sentence.get_embedding().numpy().tolist())
         status = 'success'
         err = 'none'
     except:
-        results = []
         status = 'failed'
         err = 'error encountered'
     return { 'time_taken': float(hug_timer), 'success': status, "error": err, "results": results}
@@ -127,17 +127,24 @@ def get_entities(body, hug_timer=3):
     if not correct_input_format(msg, "documents"):
         return { 'time_taken': float(hug_timer), 'success': False, "error": "Wrong input format received"}
 
-    documents = msg['documents']
-    ner_tagger = msg.get('tagger', 'spacy')
     results = []
-    for text in documents:
-        if ner_tagger == 'spacy':
-            doc = nlp(text)
-            entities = [{'text': ent.text, 'label': ent.label} for ent in doc.ents]
-        elif ner_tagger == 'flair':
-            Sentence()
-            flair_ner_tagger.predict()
-        results.append(entities)
-    return {'time_taken': float(hug_timer), 'success': status, "error": err, "results": results}
+    try:
+        documents = msg['documents']
+        ner_tagger = msg.get('tagger', 'spacy')
+        results = []
 
-    return {'entities': entities}
+        for text in documents:
+            if ner_tagger == 'spacy':
+                doc = nlp(text)
+                entities = [{'text': ent.text, 'label': ent.label} for ent in doc.ents]
+            elif ner_tagger == 'flair':
+                sentence = Sentence(text)
+                flair_ner_tagger.predict(sentence)
+                entities = [{'text': ent['text'], 'label': ent['type'], 'confidence': ent['confidence']} for ent in sentence.to_dict('ner')['entities']]
+            results.append(entities)
+        status = 'success'
+        err = 'none'
+    except:
+        status = 'failed'
+        err = 'error encountered'
+    return {'time_taken': float(hug_timer), 'success': status, "error": err, "results": results}
